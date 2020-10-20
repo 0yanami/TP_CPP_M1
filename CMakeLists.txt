@@ -1,0 +1,10 @@
+cmake_minimum_required(VERSION 2.8)
+
+project("calculator")
+# These two lines define the C++ standard required
+set(CMAKE_CXX_STANDARD 17)
+set(CXX_STANDARD_REQUIRED True)
+# Set compile option for the project
+set(CMAKE_CXX_FLAGS"${CMAKE_CXX_FLAGS} -Wall -Werror -g -ggdb")
+# Configure the executable target from the source files
+add_executable(calculator src/main.cpp)
