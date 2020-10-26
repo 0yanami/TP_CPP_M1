@@ -11,7 +11,9 @@ int main (int argc, char *argv[]) {
     string userInput;
     while(true){
         cin >> userInput;
-        cout << "Vous venez d'écrire: "<< userInput <<endl;
+        cout << "Output: " << endl;
+        Expression expr(userInput);
+        expr.eval();
     }
     return 0;
 }

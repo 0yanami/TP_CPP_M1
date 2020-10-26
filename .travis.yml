@@ -5,10 +5,10 @@ language: cpp
 addons:
   apt:
     sources:
-      - llvm-toolchain-trusty-5.0
+      - llvm-toolchain-trusty-10.0.0
     packages:
-      - clang-5.0
+      - clang-10.0.0
 
 script:
-  - CXX=/usr/bin/clang++-5.0 CC=/usr/bin/clang-5.0 cmake .
+  - CXX=/usr/bin/clang++-10.0.0 CC=/usr/bin/clang-10.0.0 cmake .
   - cmake --build .

@@ -1,9 +1,14 @@
 #ifndef EXPRESSIONH
 #define EXPRESSIONH
 
-#include<string>
+#include <string>
 #include <vector>
+#include <algorithm>
+#include <iostream>
+#include <stdexcept>
 #include "token.hpp"
+
+
 using namespace std;
 
 class Expression {
@@ -12,7 +17,9 @@ public:
     int eval();
     void print();
 private:
-    vector<Token*> tokensFromString(const string& s, char delim);
+    const vector<char> binOps{'+','-','/','*'} ;
+    vector<Token*> tokensFromString(const string& s);
+    void printToks(vector<Token*> tokenList);
     string expr;
 };
 
