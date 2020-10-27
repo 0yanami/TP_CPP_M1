@@ -3,16 +3,20 @@
 Expression::Expression(string _str) : expr(_str){}
 
 int Expression::eval(){
-    vector<Token*> tokenList = tokensFromString(expr);
-    printToks(tokenList);
-    return 0;
+    
 }
 
-void Expression::printToks(vector<Token*> tokenList){
-    for(Token* tok  : tokenList){
-        cout << *tok ;
+string Expression::print(){
+    vector<Token*> tokenList = tokensFromString(expr);
+    return printToks(tokenList);
+}
+
+string Expression::printToks(vector<Token*> tokenList){
+    ostringstream out;
+        for(Token* tok  : tokenList){
+        out << *tok;
     }
-    cout << endl;
+    return out.str();
 }
 
 vector<Token*> Expression::tokensFromString(const string& s){

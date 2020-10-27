@@ -6,9 +6,9 @@ set(CMAKE_CXX_STANDARD 17)
 set(CXX_STANDARD_REQUIRED True)
 
 # Set compile option for the project
-set(CMAKE_CXX_FLAGS"${CMAKE_CXX_FLAGS} -Wall -Werror -g -ggdb")
+set(CMAKE_CXX_FLAGS"${CMAKE_CXX_FLAGS} -Wall -Werror -g -ggdb -D ")
 
-include_directories(include/)
-file(GLOB PROJECT_SOURCES src/*.cpp)
-# Configure the executable target from the source files
-add_executable(calculator ${PROJECT_SOURCES} "src/main.cpp")
+
+add_subdirectory(lib/googletest-release-1.10.0)
+add_subdirectory(src)
+add_subdirectory(test)

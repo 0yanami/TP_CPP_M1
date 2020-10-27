@@ -5,6 +5,7 @@
 #include <vector>
 #include <algorithm>
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
 #include "token.hpp"
 
@@ -15,11 +16,11 @@ class Expression {
 public:
     Expression(string _str);
     int eval();
-    void print();
+    string print();
 private:
     const vector<char> binOps{'+','-','/','*'} ;
     vector<Token*> tokensFromString(const string& s);
-    void printToks(vector<Token*> tokenList);
+    string printToks(vector<Token*> tokenList);
     string expr;
 };
 

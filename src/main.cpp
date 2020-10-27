@@ -1,6 +1,8 @@
+
 //std headers
 #include <iostream>
 #include <string>
+
 
 //project headers
 #include "expression.hpp"
@@ -13,7 +15,6 @@ int main (int argc, char *argv[]) {
         cin >> userInput;
         cout << "Output: " << endl;
         Expression expr(userInput);
-        expr.eval();
+        cout << expr.print();
     }
-    return 0;
 }
