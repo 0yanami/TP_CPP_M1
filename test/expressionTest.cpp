@@ -2,19 +2,19 @@
 #include "expression.hpp"
 
 TEST(ExpressionToString_test, test_BinOp) {
-    Expression expradd("+");
-    EXPECT_EQ (expradd.print(), "Operateur(+)");
-    Expression exprneg("-");
-    EXPECT_EQ (exprneg.print(), "Operateur(-)");
-    Expression exprdiv("/");
-    EXPECT_EQ (exprdiv.print(), "Operateur(/)");
-    Expression exprmul("*");
-    EXPECT_EQ (exprmul.print(), "Operateur(*)");
-    Expression exprmultiple("*+*/--");
-    EXPECT_EQ (exprmultiple.print(), 
+    Expression add("+");
+    EXPECT_EQ (add.print(), "Operateur(+)");
+    Expression neg("-");
+    EXPECT_EQ (neg.print(), "Operateur(-)");
+    Expression div("/");
+    EXPECT_EQ (div.print(), "Operateur(/)");
+    Expression mul("*");
+    EXPECT_EQ (mul.print(), "Operateur(*)");
+    Expression multiple("*+*/--");
+    EXPECT_EQ (multiple.print(), 
     "Operateur(*)Operateur(+)Operateur(*)Operateur(/)Operateur(-)Operateur(-)");
-    Expression exprempty("");
-    EXPECT_NE (exprempty.print(), "Operateur()");
+    Expression empty("");
+    EXPECT_NE (empty.print(), "Operateur()");
 }
 
 TEST(ExpressionToString_test, test_Numeral) {
@@ -29,4 +29,24 @@ TEST(ExpressionToString_test, test_Numeral) {
     Expression exprneg("-1");
     EXPECT_NE (exprneg.print(), "Operateur(-1)");
     EXPECT_EQ (exprneg.print(), "Operateur(-)Numeral(1)");
+    Expression spaces("23 4567");
+    EXPECT_NE (spaces.print(), "Numeral(23 4567)");
+    EXPECT_EQ (spaces.print(), "Numeral(23)Numeral(4567)");
+}
+
+TEST(ExpressionToString_test, test_NumeralAndBinop) {
+    Expression add("1+1");
+    EXPECT_EQ (add.print(), "Numeral(1)Operateur(+)Numeral(1)");
+    Expression space("1 + 1");
+    EXPECT_EQ (space.print(), "Numeral(1)Operateur(+)Numeral(1)");
+    Expression sub("327-68");
+    EXPECT_EQ (sub.print(), "Numeral(327)Operateur(-)Numeral(68)");
+    Expression div("0/0");
+    EXPECT_EQ (div.print(), "Numeral(0)Operateur(/)Numeral(0)");
+    Expression mul("35*7721");
+    EXPECT_EQ (mul.print(), "Numeral(35)Operateur(*)Numeral(7721)");
+
+    Expression multi("12*4/11-1337+0");
+    EXPECT_EQ (multi.print(), 
+    "Numeral(12)Operateur(*)Numeral(4)Operateur(/)Numeral(11)Operateur(-)Numeral(1337)Operateur(+)Numeral(0)");
 }
