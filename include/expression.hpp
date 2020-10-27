@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <memory>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
@@ -19,8 +20,9 @@ public:
     string print();
 private:
     const vector<char> binOps{'+','-','/','*'} ;
-    vector<Token*> tokensFromString(const string& s);
-    string printToks(vector<Token*> tokenList);
+    vector<unique_ptr<Token>> tokensFromString(const string& s);
+    string printToks(vector<unique_ptr<Token>>  tokenList);
+    vector<unique_ptr<Token>> parse(vector<unique_ptr<Token>> tokenList);
     string expr;
 };
 
