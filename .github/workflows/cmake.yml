@@ -29,3 +29,6 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: ./test/calculator_test
+    - name: Valgrind Memcheck
+      run: run: sudo apt-get install valgrind
+      run: valgrind ./src/calculator_run 100/2+33-7
