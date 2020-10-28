@@ -14,6 +14,6 @@ int main(int argc, char *argv[])
     //getline(cin ,userInput);
     cout << "Output: (size=" << userInput.size() << ")" << endl;
     Expression expr(userInput);
-    cout << "Input ["<<userInput <<"] after parsing: "<<expr.print() << endl;
+    cout << "Input ["<<userInput <<"] after parsing: "<< expr.printWithParse() << endl;
     cout << "fin prog" << endl;
 }

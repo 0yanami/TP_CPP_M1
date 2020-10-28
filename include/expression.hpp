@@ -18,6 +18,7 @@ public:
     Expression(string _str);
     int eval();
     string print();
+    string printWithParse();
 private:
     const map<char, TOKEN> binops
     {
@@ -30,6 +31,7 @@ private:
     };
     vector<Token*> tokensFromString(const string& s);
     vector<Token*> parse(vector<Token*>& tokenList);
+    
     string expr;
     
 };

@@ -9,12 +9,21 @@ int Expression::eval(){
 string Expression::print(){
     ostringstream out;
     auto tks = tokensFromString(expr);
+    for(auto& tok  :  tks){
+        out << *tok;
+        delete tok;
+    }
+    return out.str();
+}
+
+string Expression::printWithParse(){
+    ostringstream out;
+    auto tks = tokensFromString(expr);
     auto tks_parsed = parse(tks);
     for(auto& tok  :  tks_parsed){
         out << *tok;
         delete tok;
     }
-    cout << "fin du print : " << out.str() << endl;
     return out.str();
 }
 
