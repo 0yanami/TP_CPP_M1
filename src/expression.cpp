@@ -3,20 +3,21 @@
 Expression::Expression(string _str) : expr(_str){}
 
 int Expression::eval(){
-    
+    return 0;
 }
 
 string Expression::print(){
-    return printToks(tokensFromString(expr));
-}
-
-string Expression::printToks(vector<unique_ptr<Token>> tokenList){
     ostringstream out;
-        for(auto& tok  : tokenList){
+    auto tks = tokensFromString(expr);
+    auto tks_parsed = parse(tks);
+    for(auto& tok  :  tks_parsed){
+        
         out << *tok;
     }
+    cout << "fin du print : " << out.str() << endl;
     return out.str();
 }
+
 
 vector<unique_ptr<Token>> Expression::tokensFromString(const string& s){
     vector<unique_ptr<Token>> tokenList;
@@ -51,12 +52,13 @@ vector<unique_ptr<Token>> Expression::tokensFromString(const string& s){
     return tokenList;
 }
 
-vector<unique_ptr<Token>> parse(vector<unique_ptr<Token>> tokenList){
+vector<unique_ptr<Token>> Expression::parse(vector<unique_ptr<Token>>& tokenList){
+    
     vector<unique_ptr<Token>> output;
     vector<unique_ptr<Token>> stack;
     for(auto& token : tokenList){
         token->RPN(output,stack);
     }
-    vector<unique_ptr<Token>> ok;
-    return ok;
+    move(begin(stack), end(stack), back_inserter(output));
+    return output;
 }
