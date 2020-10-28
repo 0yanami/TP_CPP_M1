@@ -22,8 +22,9 @@ vector<unique_ptr<Token>> Expression::tokensFromString(const string& s){
     vector<unique_ptr<Token>> tokenList;
     for(auto i=s.begin(); i!= s.end();){
         //if char of string is a binop, add it
-        if(find(binOps.begin(),binOps.end(),*i) != binOps.end()){
-            unique_ptr<BinOp> op(new BinOp(*i));
+        
+        if( binops.find(*i) != binops.end()){
+            unique_ptr<BinOp> op(new BinOp(binops.at(*i)));
             tokenList.emplace_back(move(op));
             i++;
         }
@@ -51,6 +52,11 @@ vector<unique_ptr<Token>> Expression::tokensFromString(const string& s){
 }
 
 vector<unique_ptr<Token>> parse(vector<unique_ptr<Token>> tokenList){
+    vector<unique_ptr<Token>> output;
+    vector<unique_ptr<Token>> stack;
+    for(auto& token : tokenList){
+        token->RPN(output,stack);
+    }
     vector<unique_ptr<Token>> ok;
     return ok;
 }

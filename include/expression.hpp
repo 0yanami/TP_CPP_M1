@@ -19,7 +19,15 @@ public:
     int eval();
     string print();
 private:
-    const vector<char> binOps{'+','-','/','*'} ;
+    const map<char, TOKEN> binops
+    {
+        { '-', SUB },
+        { '+', ADD },
+        { '/', DIV },
+        { '*', MUL },
+        { ')', RPAR },
+        { '(', LPAR }
+    };
     vector<unique_ptr<Token>> tokensFromString(const string& s);
     string printToks(vector<unique_ptr<Token>>  tokenList);
     vector<unique_ptr<Token>> parse(vector<unique_ptr<Token>> tokenList);
