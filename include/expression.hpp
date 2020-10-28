@@ -28,10 +28,10 @@ private:
         { ')', RPAR },
         { '(', LPAR }
     };
-    vector<unique_ptr<Token>> tokensFromString(const string& s);
-    string printToks(vector<unique_ptr<Token>>  tokenList);
-    vector<unique_ptr<Token>> parse(vector<unique_ptr<Token>> tokenList);
+    vector<Token*> tokensFromString(const string& s);
+    vector<Token*> parse(vector<Token*>& tokenList);
     string expr;
+    
 };
 
 

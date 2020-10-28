@@ -11,22 +11,20 @@ string Expression::print(){
     auto tks = tokensFromString(expr);
     auto tks_parsed = parse(tks);
     for(auto& tok  :  tks_parsed){
-        
         out << *tok;
+        delete tok;
     }
     cout << "fin du print : " << out.str() << endl;
     return out.str();
 }
 
 
-vector<unique_ptr<Token>> Expression::tokensFromString(const string& s){
-    vector<unique_ptr<Token>> tokenList;
+vector<Token*> Expression::tokensFromString(const string& s){
+    vector<Token*> tokenList;
     for(auto i=s.begin(); i!= s.end();){
         //if char of string is a binop, add it
-        
         if( binops.find(*i) != binops.end()){
-            unique_ptr<BinOp> op(new BinOp(binops.at(*i)));
-            tokenList.emplace_back(move(op));
+            tokenList.emplace_back(new BinOp(binops.at(*i)));
             i++;
         }
         //if char is a numerical value, iterate 
@@ -37,8 +35,7 @@ vector<unique_ptr<Token>> Expression::tokensFromString(const string& s){
                 lit.push_back(*i);
                 i++;
             }
-            unique_ptr<Literal> lit_ptr(new Literal(stoi(lit)));
-            tokenList.emplace_back(move(lit_ptr));
+            tokenList.emplace_back(new Literal(stoi(lit)));
         }
         //skip spaces
         else if (isspace(*i)){
@@ -52,10 +49,10 @@ vector<unique_ptr<Token>> Expression::tokensFromString(const string& s){
     return tokenList;
 }
 
-vector<unique_ptr<Token>> Expression::parse(vector<unique_ptr<Token>>& tokenList){
+vector<Token*> Expression::parse(vector<Token*>& tokenList){
     
-    vector<unique_ptr<Token>> output;
-    vector<unique_ptr<Token>> stack;
+    vector<Token*> output;
+    vector<Token*> stack;
     for(auto& token : tokenList){
         token->RPN(output,stack);
     }
