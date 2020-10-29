@@ -16,7 +16,6 @@ float Expression::eval(){
         token->eval(output);
     }
     auto res = output.back()->v();
-    delete output.back();
     return res;
 }
 
@@ -40,12 +39,17 @@ void Expression::tokensFromString(){
         //if char is a numerical value, iterate 
         else if (isdigit(*i)|| *i == '.'){
             string lit;
-            //iterate over every next litterals for numbers
+            //iterate over every next literals for numbers
             while(i != input_expr.end() && (isdigit(*i)|| *i == '.')){
                 lit.push_back(*i);
                 i++;
             }
             tokenList.emplace_back(new Literal(stof(lit)));
+        }
+        //if char is a parenthesis
+        else if ( *i == LPAR ||  *i == RPAR){
+            tokenList.emplace_back(new Par((TOKEN)*i));
+            i++;
         }
         //skip spaces
         else if (isspace(*i)){
@@ -56,7 +60,7 @@ void Expression::tokensFromString(){
             throw std::invalid_argument( "Input string contains unexpected token(s)");
         }
     }
-}
+}//(11+1(()
 
 //transform the tokenList to rpn representation
 void Expression::parse(){
@@ -66,6 +70,10 @@ void Expression::parse(){
         token->RPN(output,stack);
     }
     reverse(begin(stack), end(stack));
-    move(begin(stack), end(stack), back_inserter(output));
+    //deletes redundant parenthesis stuck in the stack 
+    copy_if(make_move_iterator(stack.begin()),make_move_iterator(stack.end()),
+        back_inserter(output), [](Token* t) { 
+            return (t->getTk() != LPAR) && (t->getTk() != RPAR); 
+        });
     tokenList = output;
 }

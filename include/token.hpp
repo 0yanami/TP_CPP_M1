@@ -13,11 +13,13 @@ using namespace std;
 
 //list of token
 enum TOKEN {
-    NUM  = '_',
+    LIT  = '_',
     ADD  = '+',
     SUB  = '-',
     MUL  = '*',
-    DIV  = '/'
+    DIV  = '/',
+    LPAR = '(',
+    RPAR = ')'
 };
 
 //list of possible associativities (RIGHT is not needed "right" now)
@@ -28,11 +30,13 @@ enum ASSO {
 
 //Token Properties TOKEN -> PRIORITY(0=low), ASSOCIATIVITY
 const map<TOKEN,tuple<int,ASSO>> tkProp = {
-    {TOKEN::NUM,{1,ASSO::NONE}},
+    {TOKEN::LIT,{1,ASSO::NONE}},
     {TOKEN::ADD,{2,ASSO::LEFT}},
     {TOKEN::SUB,{2,ASSO::LEFT}},
     {TOKEN::MUL,{3,ASSO::LEFT}},
-    {TOKEN::DIV,{4,ASSO::LEFT}}
+    {TOKEN::DIV,{4,ASSO::LEFT}},
+    {TOKEN::LPAR,{0,ASSO::NONE}},
+    {TOKEN::RPAR,{0,ASSO::NONE}}
 };
 
 class Token {
@@ -51,10 +55,11 @@ private:
     TOKEN t;
     float num;
 public:
-    TOKEN getTk() override {return t;}
     Literal(float _num) : num(_num) {
-        t = TOKEN::NUM;
+        t = TOKEN::LIT;
     }
+    TOKEN getTk() override {return t;}
+    
     //valeur du Literal
     float v() const override{
         return num;
@@ -77,6 +82,9 @@ private:
     inline bool gtEqPrec(Token* token) const { //TODO: add const
         return (get<0>(tkProp.at(token->getTk()))  >= get<0>(tkProp.at(t)));
     };
+    inline bool isLpar(Token* token) const {
+        return token->getTk() == LPAR;
+    }
     float compute(Literal* a,Literal* b){
         switch(t){
             case ADD:return a->v() + b->v(); 
@@ -91,6 +99,7 @@ public:
     }
     BinOp(TOKEN _t) : t(_t) {}
     TOKEN getTk() override {return t;}
+
     void eval(vector<Token*>& stack) override {
         Literal* b = static_cast<Literal*>(stack.back());
         stack.pop_back();
@@ -102,11 +111,60 @@ public:
         os << "Operateur(" << (char)t << ")";
     }
     void RPN(vector<Token*>& output, vector<Token*>& stack) override{
-        while (!stack.empty() && gtEqPrec(stack.back())){
+        while (!stack.empty() && gtEqPrec(stack.back()) && !isLpar(stack.back())){
             output.push_back(move(stack.back()));
             stack.pop_back();
         }
         stack.push_back(this);
     }
 };
+
+class Par : public Token
+{
+private:
+    TOKEN t;
+public:
+    Par(TOKEN _t): t(_t){}
+    TOKEN getTk() override {return t;}
+    //valeur du Literal
+    float v() const override{
+        return -1;
+    }
+    void eval(vector<Token*>& stack) override {
+        stack.push_back(this);
+    }
+    void print(ostream &os) const override{
+        os << (t==LPAR?"(Left":"(Right") <<"Parenthesis)";
+    }
+    void RPN(vector<Token*> &output, vector<Token*> &stack) override{
+        if(!stack.empty()){
+            cout << "entrée: " ;
+            for(auto& tk : stack){
+                cout  << (char)tk->getTk() << " ";
+            } 
+            cout << endl;
+        }
+        //(11+1(()
+        if(t == LPAR){
+            stack.push_back(this);
+        }
+        else if(t == RPAR){
+            if(stack.empty()){
+                    throw invalid_argument( "Input string contains mismatched parenthesis");
+            }
+            cout << "test2"<< endl;
+            while(stack.back()->getTk() != LPAR){
+                if(stack.empty()){
+                    throw invalid_argument( "Input string contains mismatched parenthesis");
+                }
+                output.push_back(move(stack.back()));
+                stack.pop_back();
+            }
+            if(stack.back()->getTk() == LPAR){
+                stack.pop_back();
+            }
+        }
+    }
+};
+
 #endif
