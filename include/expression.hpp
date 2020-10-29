@@ -16,25 +16,23 @@ using namespace std;
 class Expression {
 public:
     Expression(string _str);
-    int eval();
+    ~Expression();
+    float eval();
     string print();
-    string printWithParse();
+    void parse();
 private:
     const map<char, TOKEN> binops
     {
         { '-', SUB },
         { '+', ADD },
         { '/', DIV },
-        { '*', MUL },
-        { ')', RPAR },
-        { '(', LPAR }
+        { '*', MUL }
     };
-    vector<Token*> tokensFromString(const string& s);
-    vector<Token*> parse(vector<Token*>& tokenList);
+    void tokensFromString();
     
-    string expr;
-    
+    string input_expr;
+    //La suite de tokens que l'on manipule
+    vector<Token*> tokenList;
 };
-
 
 #endif

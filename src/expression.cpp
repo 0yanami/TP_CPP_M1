@@ -1,50 +1,51 @@
 #include "expression.hpp"
 
-Expression::Expression(string _str) : expr(_str){}
+Expression::Expression(string _str) : input_expr(_str){
+    tokensFromString();
+}
 
-int Expression::eval(){
-    return 0;
+Expression::~Expression(){
+    for(auto& tok  :  tokenList){
+        delete tok;
+    }
+};
+
+float Expression::eval(){
+    vector<Token*> output;
+    for(auto& token : tokenList){
+        token->eval(output);
+    }
+    auto res = output.back()->v();
+    delete output.back();
+    return res;
 }
 
 string Expression::print(){
     ostringstream out;
-    auto tks = tokensFromString(expr);
-    for(auto& tok  :  tks){
+    for(auto& tok  :  tokenList){
         out << *tok;
-        delete tok;
     }
     return out.str();
 }
 
-string Expression::printWithParse(){
-    ostringstream out;
-    auto tks = tokensFromString(expr);
-    auto tks_parsed = parse(tks);
-    for(auto& tok  :  tks_parsed){
-        out << *tok;
-        delete tok;
-    }
-    return out.str();
-}
-
-
-vector<Token*> Expression::tokensFromString(const string& s){
-    vector<Token*> tokenList;
-    for(auto i=s.begin(); i!= s.end();){
+//generate a token list form input string
+void Expression::tokensFromString(){
+    //iterate over each char of string
+    for(auto i = input_expr.begin(); i!= input_expr.end();){
         //if char of string is a binop, add it
         if( binops.find(*i) != binops.end()){
             tokenList.emplace_back(new BinOp(binops.at(*i)));
             i++;
         }
         //if char is a numerical value, iterate 
-        else if (isdigit(*i)){
+        else if (isdigit(*i)|| *i == '.'){
             string lit;
             //iterate over every next litterals for numbers
-            while(i != s.end() && isdigit(*i)){
+            while(i != input_expr.end() && (isdigit(*i)|| *i == '.')){
                 lit.push_back(*i);
                 i++;
             }
-            tokenList.emplace_back(new Literal(stoi(lit)));
+            tokenList.emplace_back(new Literal(stof(lit)));
         }
         //skip spaces
         else if (isspace(*i)){
@@ -55,16 +56,16 @@ vector<Token*> Expression::tokensFromString(const string& s){
             throw std::invalid_argument( "Input string contains unexpected token(s)");
         }
     }
-    return tokenList;
 }
 
-vector<Token*> Expression::parse(vector<Token*>& tokenList){
-    
+//transform the tokenList to rpn representation
+void Expression::parse(){
     vector<Token*> output;
     vector<Token*> stack;
     for(auto& token : tokenList){
         token->RPN(output,stack);
     }
+    reverse(begin(stack), end(stack));
     move(begin(stack), end(stack), back_inserter(output));
-    return output;
+    tokenList = output;
 }

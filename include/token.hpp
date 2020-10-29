@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <map>
+#include <sstream>
 #include <tuple>
 #include <memory>
 #include <vector>
@@ -16,9 +17,7 @@ enum TOKEN {
     ADD  = '+',
     SUB  = '-',
     MUL  = '*',
-    DIV  = '/',
-    LPAR = '(',
-    RPAR = ')'
+    DIV  = '/'
 };
 
 //list of possible associativities (RIGHT is not needed "right" now)
@@ -29,20 +28,19 @@ enum ASSO {
 
 //Token Properties TOKEN -> PRIORITY(0=low), ASSOCIATIVITY
 const map<TOKEN,tuple<int,ASSO>> tkProp = {
-    {TOKEN::NUM,{0,ASSO::NONE}},
-    {TOKEN::ADD,{1,ASSO::LEFT}},
-    {TOKEN::SUB,{1,ASSO::LEFT}},
-    {TOKEN::MUL,{2,ASSO::LEFT}},
-    {TOKEN::DIV,{2,ASSO::LEFT}},
-    {TOKEN::LPAR,{3,ASSO::NONE}},
-    {TOKEN::RPAR,{3,ASSO::NONE}}
+    {TOKEN::NUM,{1,ASSO::NONE}},
+    {TOKEN::ADD,{2,ASSO::LEFT}},
+    {TOKEN::SUB,{2,ASSO::LEFT}},
+    {TOKEN::MUL,{3,ASSO::LEFT}},
+    {TOKEN::DIV,{4,ASSO::LEFT}}
 };
 
 class Token {
 public:
     virtual ~Token(){};
     virtual TOKEN getTk() = 0;
-    virtual int eval() = 0;
+    virtual float v() const = 0;
+    virtual void eval(vector<Token*>& stack) = 0;
     virtual void print(ostream &os) const = 0;
     virtual void RPN(vector<Token*> &output, vector<Token*> &stack) = 0;
     friend ostream &operator<<(ostream &os, const Token &t);
@@ -51,22 +49,23 @@ public:
 class Literal : public Token{
 private:
     TOKEN t;
-    int num;
+    float num;
 public:
     TOKEN getTk() override {return t;}
-    Literal(int _num) : num(_num) {
+    Literal(float _num) : num(_num) {
         t = TOKEN::NUM;
     }
-    int eval() override
-    {
-        return 0;
+    //valeur du Literal
+    float v() const override{
+        return num;
     }
-    void print(ostream &os) const override
-    {
-        os << "Numeral(" << num << ")";
+    void eval(vector<Token*>& stack) override {
+        stack.push_back(this);
     }
-    void RPN(vector<Token*> &output, vector<Token*> &stack) override
-    {
+    void print(ostream &os) const override{
+        os << "Numeral(" << v() << ")";
+    }
+    void RPN(vector<Token*> &output, vector<Token*> &stack) override{
         output.push_back(this);
     }
 };
@@ -75,37 +74,39 @@ class BinOp : public Token
 {
 private:
     TOKEN t;
-    inline bool gtPrec(Token* token){
-        return (get<0>(tkProp.at(token->getTk()))  > get<0>(tkProp.at(t)));
+    inline bool gtEqPrec(Token* token) const { //TODO: add const
+        return (get<0>(tkProp.at(token->getTk()))  >= get<0>(tkProp.at(t)));
     };
-    //the operator has equal precedence and the token is left associative
-    inline bool eqPrecLasso(Token* token){
-        return (get<0>(tkProp.at(token->getTk())) == t) && 
-        (get<1>(tkProp.at(token->getTk())) == ASSO::LEFT);
-    };
-    //the operator is a left parenthesis
-    inline bool isLPar(Token* token){
-        return (token->getTk() == TOKEN::LPAR);
-    };
+    float compute(Literal* a,Literal* b){
+        switch(t){
+            case ADD:return a->v() + b->v(); 
+            case SUB:return a->v() - b->v();
+            case MUL:return a->v() * b->v(); 
+            case DIV:return a->v() / b->v();
+        };
+    }
 public:
+    float v() const  override{
+        return -1;
+    }
     BinOp(TOKEN _t) : t(_t) {}
     TOKEN getTk() override {return t;}
-    int eval() override
-    {
-        return 0;
+    void eval(vector<Token*>& stack) override {
+        Literal* b = static_cast<Literal*>(stack.back());
+        stack.pop_back();
+        Literal* a = static_cast<Literal*>(stack.back());
+        stack.pop_back();
+        stack.push_back(new Literal(compute(a,b)));
     }
-    void print(ostream &os) const override
-    {
+    void print(ostream &os) const override{
         os << "Operateur(" << (char)t << ")";
     }
-
-    void RPN(vector<Token*>& output, vector<Token*>& stack) override{ 
-        while (!stack.empty() && (gtPrec(stack.back()) || eqPrecLasso(stack.back())) && !isLPar(stack.back())){
+    void RPN(vector<Token*>& output, vector<Token*>& stack) override{
+        while (!stack.empty() && gtEqPrec(stack.back())){
             output.push_back(move(stack.back()));
             stack.pop_back();
         }
         stack.push_back(this);
     }
 };
-
 #endif
