@@ -16,6 +16,7 @@ float Expression::eval(){
         token->eval(output);
     }
     auto res = output.back()->v();
+    delete output.back();
     return res;
 }
 

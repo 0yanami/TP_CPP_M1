@@ -41,7 +41,7 @@ const map<TOKEN,tuple<int,ASSO>> tkProp = {
 
 class Token {
 public:
-    virtual ~Token(){};
+    virtual ~Token(){};//TODO:faire un destructeur avec print pour chaque type de token pour voir les destructions
     virtual TOKEN getTk() = 0;
     virtual float v() const = 0;
     virtual void eval(vector<Token*>& stack) = 0;
@@ -55,7 +55,9 @@ private:
     TOKEN t;
     float num;
 public:
+    ~Literal(){ cout << "literal"<<num<<" destructed" << endl;}
     Literal(float _num) : num(_num) {
+        cout << "literal"<<num<<" constructed"<< endl;
         t = TOKEN::LIT;
     }
     TOKEN getTk() override {return t;}
@@ -65,7 +67,7 @@ public:
         return num;
     }
     void eval(vector<Token*>& stack) override {
-        stack.push_back(this);
+        stack.push_back(new Literal(num));
     }
     void print(ostream &os) const override{
         os << "Numeral(" << v() << ")";
@@ -85,27 +87,32 @@ private:
     inline bool isLpar(Token* token) const {
         return token->getTk() == LPAR;
     }
-    float compute(Literal* a,Literal* b){
+    float compute(float a,float b){
         switch(t){
-            case ADD:return a->v() + b->v(); 
-            case SUB:return a->v() - b->v();
-            case MUL:return a->v() * b->v(); 
-            case DIV:return a->v() / b->v();
+            case ADD:return a + b; 
+            case SUB:return a - b;
+            case MUL:return a * b; 
+            case DIV:return a / b;
         };
     }
 public:
+    ~BinOp(){ cout << "Binop "<<(char)t<<" destructed" << endl;}
     float v() const  override{
+        
         return -1;
     }
-    BinOp(TOKEN _t) : t(_t) {}
+    BinOp(TOKEN _t) : t(_t) {cout << "Binop "<<(char)_t<<" constructed" << endl;}
     TOKEN getTk() override {return t;}
 
     void eval(vector<Token*>& stack) override {
-        Literal* b = static_cast<Literal*>(stack.back());
+        float b = stack.back()->v();
+        delete stack.back();
         stack.pop_back();
-        Literal* a = static_cast<Literal*>(stack.back());
+        float a =stack.back()->v();
+        delete stack.back();
         stack.pop_back();
-        stack.push_back(new Literal(compute(a,b)));
+        float res = compute(a,b);
+        stack.push_back(new Literal(res));
     }
     void print(ostream &os) const override{
         os << "Operateur(" << (char)t << ")";
@@ -124,7 +131,8 @@ class Par : public Token
 private:
     TOKEN t;
 public:
-    Par(TOKEN _t): t(_t){}
+    Par(TOKEN _t): t(_t){cout << "Parenthesis "<<(char)_t<<" constructed" << endl;}
+    ~Par(){ cout << "Parenthesis "<<(char)t<<" destructed" << endl;}
     TOKEN getTk() override {return t;}
     //valeur du Literal
     float v() const override{
