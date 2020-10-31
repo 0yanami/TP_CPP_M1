@@ -34,9 +34,9 @@ jobs:
       run: ./test/calculator_test
 
     - name: Dir check
-      working-directory: ${{runner.workspace}}
+      working-directory: ${{runner.workspace}}/TP_CPP_M1
       run: ls
       
     - name: Valgrind Memcheck
       working-directory: ${{runner.workspace}}/build
-      run: valgrind ./src/calculator_run < ../testMemleaks.txt
+      run: valgrind ./src/calculator_run < ${{runner.workspace}}/TP_CPP_M1/testMemleaks.txt
