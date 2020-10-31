@@ -1,18 +1,11 @@
 #include "expression.hpp"
 
-Expression::Expression(string _str) : input_expr(_str){
-    tokensFromString();
-}
+map<char, TOKEN> Expression::binops = {
+    {'-', SUB}, {'+', ADD}, {'/', DIV}, {'*', MUL}};
 
-Expression::~Expression(){
-    for(auto& tok  :  tokenList){
-        delete tok;
-    }
-};
-
-float Expression::eval(){
-    vector<Token*> output;
-    for(auto& token : tokenList){
+float Expression::eval(vector<Token *> input) {
+    vector<Token *> output;
+    for (auto &token : input) {
         token->eval(output);
     }
     auto res = output.back()->v();
@@ -20,61 +13,151 @@ float Expression::eval(){
     return res;
 }
 
-string Expression::print(){
+string Expression::print(vector<Token *> input) {
     ostringstream out;
-    for(auto& tok  :  tokenList){
+    for (auto &tok : input) {
         out << *tok;
     }
     return out.str();
 }
 
-//generate a token list form input string
-void Expression::tokensFromString(){
-    //iterate over each char of string
-    for(auto i = input_expr.begin(); i!= input_expr.end();){
-        //if char of string is a binop, add it
-        if( binops.find(*i) != binops.end()){
-            tokenList.emplace_back(new BinOp(binops.at(*i)));
+// generate a vector of tuple<list of tokens,"ends with SEMI"> for each line
+// from input string
+vector<tuple<vector<Token *>, bool>> Expression::tokensFromString(
+    string& s, map<string, float>& var_memory) {
+    vector<tuple<vector<Token *>, bool>> output;
+    vector<Token *> lineBuffer;
+    // iterate over each char of string
+    for (auto i = s.begin(); i != s.end();) {
+        int line_num = output.size() + 1;
+        // cout << "reading: " << (int)*i << endl;
+        // if char of string is a binop, add it
+        if (binops.find(*i) != binops.end()) {
+            lineBuffer.emplace_back(new BinOp(binops.at(*i)));
             i++;
         }
-        //if char is a numerical value, iterate 
-        else if (isdigit(*i)|| *i == '.'){
-            string lit;
-            //iterate over every next literals for numbers
-            while(i != input_expr.end() && (isdigit(*i)|| *i == '.')){
+        // if char is a numerical value, iterate
+        else if (isdigit(*i) || *i == TOKEN::DOT) {
+            digitHandler(s, i, lineBuffer);
+        }
+        // if char is a parenthesis
+        else if (*i == TOKEN::LPAR || *i == TOKEN::RPAR) {
+            lineBuffer.emplace_back(new Par((TOKEN)*i));
+            i++;
+        }
+        // parse function identifiers (starts with alpha char)
+        else if (isalpha(*i)) {
+            variableHandler(s, i, lineBuffer, var_memory, line_num);
+        }
+        // skip spaces
+        else if (*i == TOKEN::SPACE) {
+            i++;
+        }
+        // if semicolon found
+        else if (*i == TOKEN::SEMI) {
+            output.emplace_back(tuple{lineBuffer, false});
+            lineBuffer.clear();
+            i++;
+        }
+        // if CR
+        else if (*i == TOKEN::CR) {
+            if (!lineBuffer.empty()) {
+                output.emplace_back(tuple{lineBuffer, true});
+                lineBuffer.clear();
+            }
+            i += 2;
+        }
+        // ignore new line feeds
+        else if (*i == TOKEN::LF) {
+            i++;
+        }
+        // token is not recognized
+        else {
+            unexpectedHandler(i,line_num);
+        }
+    }
+    // add the last line (if no CR at the end of input string)
+    if (!lineBuffer.empty()) {
+        output.emplace_back(tuple{lineBuffer, true});
+    }
+    return output;
+}
+
+void Expression::variableHandler(string& s, string::iterator& i, vector<Token *>& lineBuffer, map<string, float>& var_memory,int line_num) {
+    string id = "";
+    id.push_back(*i);
+    i++;
+    // variable id begins with either alpha, digit or underscore
+    while (isalpha(*i) || isdigit(*i) || *i == '_') {
+        id.push_back(*i);
+        i++;
+    }
+    // end of id reading
+    if (*i == TOKEN::SPACE) {
+        i++;
+    }
+    // if assignation
+    if (*i == TOKEN::EQ) {
+        i++;
+        // evaluate the expression after '=' until linebreak or semi
+        string subeval = "";
+
+        while (i != s.end() && *i != TOKEN::SEMI && *i != TOKEN::CR) {
+            if (*i != TOKEN::SPACE) subeval.push_back(*i);
+            i++;
+        }
+        //cout << "subeval \"" << subeval << "\"" << endl;
+        if (subeval.size() == 0) {
+            throw invalid_argument("expected expression after variable " + id +
+                                   " = ... [line " + to_string(line_num) + "]");
+        }
+        auto subTks = tokensFromString(subeval, var_memory)[0];
+        float value = eval(parse(get<0>(subTks)));
+
+        var_memory.insert(make_pair(id, value));
+    } else {
+        if (var_memory.find(id) != var_memory.end()) {
+            lineBuffer.emplace_back(new Literal(var_memory.at(id)));  // TODO:
+        } else {
+            throw invalid_argument("variable " + id +
+                                   " referenced before assignment");
+        }
+    }
+};
+
+void Expression::digitHandler(string& s,string::iterator& i, vector<Token *>& lineBuffer){
+    string lit;
+            // iterate over every next literals for numbers
+            while (i != s.end() && (isdigit(*i) || *i == TOKEN::DOT)) {
                 lit.push_back(*i);
                 i++;
             }
-            tokenList.emplace_back(new Literal(stof(lit)));
-        }
-        //if char is a parenthesis
-        else if ( *i == LPAR ||  *i == RPAR){
-            tokenList.emplace_back(new Par((TOKEN)*i));
-            i++;
-        }
-        //skip spaces
-        else if (isspace(*i)){
-            i++;
-        }
-        //token is not recognized
-        else {
-            throw std::invalid_argument( "Input string contains unexpected token(s)");
-        }
-    }
-}//(11+1(()
+            lineBuffer.emplace_back(new Literal(stof(lit)));
+};
 
-//transform the tokenList to rpn representation
-void Expression::parse(){
-    vector<Token*> output;
-    vector<Token*> stack;
-    for(auto& token : tokenList){
-        token->RPN(output,stack);
+void Expression::binOpHandler(){
+
+};
+
+void Expression::unexpectedHandler(string::iterator& i, int line_num){
+    string s = "[line"+to_string(line_num)+"]Input string contains unexpected token(s): '";
+            s.append(&*i);
+            s.append("' (ASCII code " + to_string((int)*i) + ")");
+            throw invalid_argument(s);
+};
+
+// transform the tokenList to rpn representation
+vector<Token *> Expression::parse(vector<Token *> input) {
+    vector<Token *> output;
+    vector<Token *> stack;
+    for (auto &token : input) {
+        token->RPN(output, stack);
     }
     reverse(begin(stack), end(stack));
-    //deletes redundant parenthesis stuck in the stack 
-    copy_if(make_move_iterator(stack.begin()),make_move_iterator(stack.end()),
-        back_inserter(output), [](Token* t) { 
-            return (t->getTk() != LPAR) && (t->getTk() != RPAR); 
-        });
-    tokenList = output;
+    // deletes redundant parenthesis stuck in the stack
+    copy_if(make_move_iterator(stack.begin()), make_move_iterator(stack.end()),
+            back_inserter(output), [](Token *t) {
+                return (t->getTk() != LPAR) && (t->getTk() != RPAR);
+            });
+    return output;
 }
