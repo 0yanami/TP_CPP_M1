@@ -35,4 +35,4 @@ jobs:
       
     - name: Valgrind Memcheck
       working-directory: ${{runner.workspace}}/build
-      run: valgrind ./src/calculator_run 100/2+33-7
+      run: valgrind ./src/calculator_run < ${{runner.workspace}}testMemleaks.txt

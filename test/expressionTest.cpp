@@ -1,52 +1,62 @@
 #include "gtest/gtest.h"
 #include "expression.hpp"
 
+#include<map>
+
+string toTk(string s){
+    map<string, float> mem = {};
+    auto res = get<0>(Expression::tokensFromString(s,mem).at(0));
+    return Expression::print(res);
+}
+
 TEST(ExpressionToString_test, test_BinOp) {
-    Expression add("+");
-    EXPECT_EQ (add.print(), "Operateur(+)");
-    Expression neg("-");
-    EXPECT_EQ (neg.print(), "Operateur(-)");
-    Expression div("/");
-    EXPECT_EQ (div.print(), "Operateur(/)");
-    Expression mul("*");
-    EXPECT_EQ (mul.print(), "Operateur(*)");
-    Expression multiple("*+*/--");
-    EXPECT_EQ (multiple.print(), 
-    "Operateur(*)Operateur(+)Operateur(*)Operateur(/)Operateur(-)Operateur(-)");
-    Expression empty("");
-    EXPECT_NE (empty.print(), "Operateur()");
+    EXPECT_EQ (toTk("+"), "BinaryOp(+)");
+    EXPECT_EQ (toTk("-"), "BinaryOp(-)");
+    EXPECT_EQ (toTk("/"), "BinaryOp(/)");
+    EXPECT_EQ (toTk("*"), "BinaryOp(*)");
+    EXPECT_EQ (toTk("*+-/--"),
+    "BinaryOp(*)BinaryOp(+)BinaryOp(-)BinaryOp(/)BinaryOp(-)BinaryOp(-)");
 }
 
-TEST(ExpressionToString_test, test_Numeral) {
-    Expression one("1");
-    EXPECT_EQ (one.print(), "Numeral(1)");
-    Expression integ("32768");
-    EXPECT_EQ (integ.print(), "Numeral(32768)");
-    Expression zeros("000000");
-    // 0000 est percu comme une valeur int = 0
-    EXPECT_EQ (zeros.print(), "Numeral(0)");
-    EXPECT_NE (zeros.print(), "Numeral(000000)");
-    Expression exprneg("-1");
-    EXPECT_NE (exprneg.print(), "Operateur(-1)");
-    EXPECT_EQ (exprneg.print(), "Operateur(-)Numeral(1)");
-    Expression spaces("23 4567");
-    EXPECT_NE (spaces.print(), "Numeral(23 4567)");
-    EXPECT_EQ (spaces.print(), "Numeral(23)Numeral(4567)");
+TEST(ExpressionToString_test, test_Literal) {
+    EXPECT_EQ (toTk("1"), "Literal(1)");
+    EXPECT_EQ (toTk("32768"), "Literal(32768)");
+    // 000000 perceived as 0
+    EXPECT_EQ (toTk("000000"), "Literal(0)");
+    EXPECT_NE (toTk("000000"), "Literal(000000)");
+    EXPECT_NE (toTk("-1"), "BinaryOp(-1)");
+    EXPECT_EQ (toTk("-1"), "BinaryOp(-)Literal(1)");
+    EXPECT_NE (toTk("23 4567"), "Literal(234567)");
+    EXPECT_EQ (toTk("23 4567"), "Literal(23)Literal(4567)");
+}
+TEST(ExpressionToString_test, test_Reals) {
+    EXPECT_EQ (toTk("1.15"), "Literal(1.15)");
+    EXPECT_EQ (toTk("32768.1"), "Literal(32768.1)");
+    // 000000.0 perceived as 0
+    EXPECT_EQ (toTk("000000.0"), "Literal(0)");
+    EXPECT_NE (toTk("000000.0"), "Literal(000000)");
+    EXPECT_NE (toTk("-1.451"), "BinaryOp(-1.451)");
+    EXPECT_EQ (toTk("-1.451"), "BinaryOp(-)Literal(1.451)");
+    EXPECT_NE (toTk("23 4567.3"), "Literal(234567.3)");
+    EXPECT_EQ (toTk("23 4567.3"), "Literal(23)Literal(4567.3)");
 }
 
-TEST(ExpressionToString_test, test_NumeralAndBinop) {
-    Expression add("1+1");
-    EXPECT_EQ (add.print(), "Numeral(1)Operateur(+)Numeral(1)");
-    Expression space("1 + 1");
-    EXPECT_EQ (space.print(), "Numeral(1)Operateur(+)Numeral(1)");
-    Expression sub("327-68");
-    EXPECT_EQ (sub.print(), "Numeral(327)Operateur(-)Numeral(68)");
-    Expression div("0/0");
-    EXPECT_EQ (div.print(), "Numeral(0)Operateur(/)Numeral(0)");
-    Expression mul("35*7721");
-    EXPECT_EQ (mul.print(), "Numeral(35)Operateur(*)Numeral(7721)");
+TEST(ExpressionToString_test, test_Parenthesis) {
+    EXPECT_EQ (toTk("("), "(Left Parenthesis)");
+    EXPECT_EQ (toTk(")"), "(Right Parenthesis)");
+    EXPECT_EQ (toTk("(1)"), 
+    "(Left Parenthesis)Literal(1)(Right Parenthesis)");
+    EXPECT_EQ (toTk(")()(("), 
+    "(Right Parenthesis)(Left Parenthesis)(Right Parenthesis)(Left Parenthesis)(Left Parenthesis)");
+}
 
-    Expression multi("12*4/11-1337+0");
-    EXPECT_EQ (multi.print(), 
-    "Numeral(12)Operateur(*)Numeral(4)Operateur(/)Numeral(11)Operateur(-)Numeral(1337)Operateur(+)Numeral(0)");
+TEST(ExpressionToString_test, test_Expression) {
+    EXPECT_EQ (toTk("1+1"), "Literal(1)BinaryOp(+)Literal(1)");
+    EXPECT_EQ (toTk("1 + 1"), "Literal(1)BinaryOp(+)Literal(1)");
+    EXPECT_EQ (toTk("327-68"), "Literal(327)BinaryOp(-)Literal(68)");
+    EXPECT_EQ (toTk("0/0"), "Literal(0)BinaryOp(/)Literal(0)");
+    EXPECT_EQ (toTk("35*7721"), "Literal(35)BinaryOp(*)Literal(7721)");
+    EXPECT_EQ (toTk("(41-7)*7721"), "(Left Parenthesis)Literal(41)BinaryOp(-)Literal(7)(Right Parenthesis)BinaryOp(*)Literal(7721)");
+    EXPECT_EQ (toTk("12*4/11-1337+0"), 
+    "Literal(12)BinaryOp(*)Literal(4)BinaryOp(/)Literal(11)BinaryOp(-)Literal(1337)BinaryOp(+)Literal(0)");
 }
