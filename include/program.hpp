@@ -19,15 +19,14 @@ public:
     Program(istream& _s){
         string str_s(istreambuf_iterator<char>(_s), {});
         prog_input = str_s;
-        /*
-        for (auto i = prog_input.begin(); i != prog_input.end();i++){
-            cout << "reading: " << (int)*i << endl;
-        }
-        cout << "finished" << endl;
-        */
-        
     }
+    //constructor for googletest tests
+    Program(string _s): prog_input(_s){};
+
     void execute();
+
+    //method returns a string for googletest tests
+    string executeString();
 };
 
 #endif

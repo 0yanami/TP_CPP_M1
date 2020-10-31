@@ -30,19 +30,23 @@ enum TOKEN {
 };
 
 // list of possible associativities (RIGHT is not needed "right" now)
-enum ASSO { LEFT, NONE };
+enum ASSO { 
+    LEFT, 
+    NONE };
 
 // Token Properties TOKEN -> PRIORITY(0=low), ASSOCIATIVITY
 const map<TOKEN, tuple<int, ASSO>> tkProp = {
-    {TOKEN::LIT, {1, ASSO::NONE}}, {TOKEN::ADD, {2, ASSO::LEFT}},
-    {TOKEN::SUB, {2, ASSO::LEFT}}, {TOKEN::MUL, {3, ASSO::LEFT}},
-    {TOKEN::DIV, {4, ASSO::LEFT}}, {TOKEN::LPAR, {0, ASSO::NONE}},
-    {TOKEN::RPAR, {0, ASSO::NONE}}};
+    {TOKEN::LIT, {1, ASSO::NONE}},
+    {TOKEN::ADD, {2, ASSO::LEFT}},
+    {TOKEN::SUB, {2, ASSO::LEFT}},
+    {TOKEN::MUL, {3, ASSO::LEFT}},
+    {TOKEN::DIV, {4, ASSO::LEFT}},
+    {TOKEN::LPAR,{0, ASSO::NONE}},
+    {TOKEN::RPAR,{0, ASSO::NONE}}};
 
 class Token {
    public:
-    virtual ~Token(){};  // TODO:faire un destructeur avec print pour chaque
-                         // type de token pour voir les destructions
+    virtual ~Token(){};
     virtual TOKEN getTk() = 0;
     virtual float v() const = 0;
     virtual void eval(vector<Token *> &stack) = 0;
@@ -57,10 +61,8 @@ class Literal : public Token {
     float num;
 
    public:
-    ~Literal() {  // cout << "literal" << num << " destructed" << endl;
-    }
+    ~Literal() {}
     Literal(float _num) : num(_num) {
-        // cout << "literal" << num << " constructed" << endl;
         t = TOKEN::LIT;
     }
     TOKEN getTk() override { return t; }
@@ -70,7 +72,7 @@ class Literal : public Token {
     void eval(vector<Token *> &stack) override {
         stack.push_back(new Literal(num));
     }
-    void print(ostream &os) const override { os << "Numeral(" << v() << ")"; }
+    void print(ostream &os) const override { os << "Literal(" << v() << ")"; }
     void RPN(vector<Token *> &output, vector<Token *> &stack) override {
         output.push_back(this);
     }
@@ -79,10 +81,11 @@ class Literal : public Token {
 class BinOp : public Token {
    private:
     TOKEN t;
-    inline bool gtEqPrec(Token *token) const {
+    //if the token has a geater or equal precendence than
+    inline bool gtEqPrec(Token* token) const {
         return (get<0>(tkProp.at(token->getTk())) >= get<0>(tkProp.at(t)));
     };
-    inline bool isLpar(Token *token) const {
+    inline bool isLpar(Token* token) const {
         return token->getTk() == TOKEN::LPAR;
     }
     float compute(float a, float b) {
@@ -99,12 +102,9 @@ class BinOp : public Token {
     }
 
    public:
-    ~BinOp() { // cout << "Binop " << (char)t << " destructed" << endl;
-    }
+    ~BinOp() {}
     float v() const override { return -1; }
-    BinOp(TOKEN _t) : t(_t) {
-        //cout << "Binop " << (char)_t << " constructed" << endl;
-    }
+    BinOp(TOKEN _t) : t(_t) {}
     TOKEN getTk() override { return t; }
 
     void eval(vector<Token *> &stack) override {
@@ -114,11 +114,12 @@ class BinOp : public Token {
         float a = stack.back()->v();
         delete stack.back();
         stack.pop_back();
+
         float res = compute(a, b);
         stack.push_back(new Literal(res));
     }
     void print(ostream &os) const override {
-        os << "Operateur(" << (char)t << ")";
+        os << "BinaryOp(" << (char)t << ")";
     }
     void RPN(vector<Token *> &output, vector<Token *> &stack) override {
         while (!stack.empty() && gtEqPrec(stack.back()) &&
@@ -126,7 +127,7 @@ class BinOp : public Token {
             output.push_back(move(stack.back()));
             stack.pop_back();
         }
-        stack.push_back(this);
+        stack.push_back(move(this));
     }
 };
 
@@ -135,22 +136,17 @@ class Par : public Token {
     TOKEN t;
 
    public:
-    Par(TOKEN _t) : t(_t) {
-        //cout << "Parenthesis " << (char)_t << " constructed" << endl;
-    }
-    ~Par() {
-        //cout << "Parenthesis " << (char)t << " destructed" << endl;
-    }
+    Par(TOKEN _t) : t(_t) {}
+    ~Par() {}
     TOKEN getTk() override { return t; }
-    // valeur du Literal
     float v() const override { return -1; }
-    void eval(vector<Token *> &stack) override { stack.push_back(this); }
+    void eval(vector<Token *> &stack) override { stack.push_back(move(this)); }
     void print(ostream &os) const override {
         os << "(" << (t == TOKEN::LPAR ? "Left " : "Right ") << "Parenthesis)";
     }
     void RPN(vector<Token *> &output, vector<Token *> &stack) override {
         if (t == TOKEN::LPAR) {
-            stack.push_back(this);
+            stack.push_back(move(this));
         } else if (t == TOKEN::RPAR) {
             if (stack.empty()) {
                 throw invalid_argument(
@@ -165,8 +161,10 @@ class Par : public Token {
                 stack.pop_back();
             }
             if (stack.back()->getTk() == TOKEN::LPAR) {
+                delete stack.back();
                 stack.pop_back();
             }
+            delete this;
         }
     }
 };

@@ -3,12 +3,14 @@
 map<char, TOKEN> Expression::binops = {
     {'-', SUB}, {'+', ADD}, {'/', DIV}, {'*', MUL}};
 
-float Expression::eval(vector<Token *> input) {
+float Expression::eval(vector<Token *>& input) {
     vector<Token *> output;
     for (auto &token : input) {
         token->eval(output);
+        
+        
     }
-    auto res = output.back()->v();
+    float res = output.back()->v();
     delete output.back();
     return res;
 }
@@ -30,13 +32,12 @@ vector<tuple<vector<Token *>, bool>> Expression::tokensFromString(
     // iterate over each char of string
     for (auto i = s.begin(); i != s.end();) {
         int line_num = output.size() + 1;
-        // cout << "reading: " << (int)*i << endl;
         // if char of string is a binop, add it
         if (binops.find(*i) != binops.end()) {
             lineBuffer.emplace_back(new BinOp(binops.at(*i)));
             i++;
         }
-        // if char is a numerical value, iterate
+        // if char is a numerical value, use the digitHandler method
         else if (isdigit(*i) || *i == TOKEN::DOT) {
             digitHandler(s, i, lineBuffer);
         }
@@ -53,23 +54,22 @@ vector<tuple<vector<Token *>, bool>> Expression::tokensFromString(
         else if (*i == TOKEN::SPACE) {
             i++;
         }
-        // if semicolon found
+        // if semicolon found, add current line to output and clear lineBuffer
         else if (*i == TOKEN::SEMI) {
             output.emplace_back(tuple{lineBuffer, false});
             lineBuffer.clear();
             i++;
         }
-        // if CR
-        else if (*i == TOKEN::CR) {
+        // if carriage return or line feed found
+        else if (*i == TOKEN::CR || *i == TOKEN::LF) {
+            //if lineBuffer is not empty, add it to output, else skip the char
             if (!lineBuffer.empty()) {
                 output.emplace_back(tuple{lineBuffer, true});
                 lineBuffer.clear();
+                i++;
+            } else {
+                i++;
             }
-            i += 2;
-        }
-        // ignore new line feeds
-        else if (*i == TOKEN::LF) {
-            i++;
         }
         // token is not recognized
         else {
@@ -93,7 +93,7 @@ void Expression::variableHandler(string& s, string::iterator& i, vector<Token *>
         i++;
     }
     // end of id reading
-    if (*i == TOKEN::SPACE) {
+    while (*i == TOKEN::SPACE) {
         i++;
     }
     // if assignation
@@ -106,18 +106,33 @@ void Expression::variableHandler(string& s, string::iterator& i, vector<Token *>
             if (*i != TOKEN::SPACE) subeval.push_back(*i);
             i++;
         }
-        //cout << "subeval \"" << subeval << "\"" << endl;
+        //if expression after '=' is empty
         if (subeval.size() == 0) {
             throw invalid_argument("expected expression after variable " + id +
                                    " = ... [line " + to_string(line_num) + "]");
         }
+        //evaluate the expression
         auto subTks = tokensFromString(subeval, var_memory)[0];
-        float value = eval(parse(get<0>(subTks)));
-
-        var_memory.insert(make_pair(id, value));
-    } else {
+        auto parsedSubTks = parse(get<0>(subTks));
+        float value = eval(parsedSubTks);
+        //clean memory
+        for(auto& tk : parsedSubTks){
+            delete tk;
+        }
+        //if the id is not in memory add the pair id/value
+        if (var_memory.find(id) == var_memory.end()) {
+              var_memory.insert(make_pair(id, value));
+        }
+        //is the id is in memory, modify the value of id
+        else{
+            var_memory.at(id) = value;
+        }
+    }
+    // no assignation, expecting a call
+    else {
         if (var_memory.find(id) != var_memory.end()) {
-            lineBuffer.emplace_back(new Literal(var_memory.at(id)));  // TODO:
+            //a call adds the value of the variable as a litteral
+            lineBuffer.emplace_back(new Literal(var_memory.at(id)));
         } else {
             throw invalid_argument("variable " + id +
                                    " referenced before assignment");
@@ -127,7 +142,7 @@ void Expression::variableHandler(string& s, string::iterator& i, vector<Token *>
 
 void Expression::digitHandler(string& s,string::iterator& i, vector<Token *>& lineBuffer){
     string lit;
-            // iterate over every next literals for numbers
+            // iterate over every next literals or '.' for numbers
             while (i != s.end() && (isdigit(*i) || *i == TOKEN::DOT)) {
                 lit.push_back(*i);
                 i++;
@@ -135,10 +150,7 @@ void Expression::digitHandler(string& s,string::iterator& i, vector<Token *>& li
             lineBuffer.emplace_back(new Literal(stof(lit)));
 };
 
-void Expression::binOpHandler(){
-
-};
-
+//handle unexpected token/char
 void Expression::unexpectedHandler(string::iterator& i, int line_num){
     string s = "[line"+to_string(line_num)+"]Input string contains unexpected token(s): '";
             s.append(&*i);
@@ -157,7 +169,11 @@ vector<Token *> Expression::parse(vector<Token *> input) {
     // deletes redundant parenthesis stuck in the stack
     copy_if(make_move_iterator(stack.begin()), make_move_iterator(stack.end()),
             back_inserter(output), [](Token *t) {
-                return (t->getTk() != LPAR) && (t->getTk() != RPAR);
+                if((t->getTk() != TOKEN::LPAR) && (t->getTk() != TOKEN::RPAR)){
+                    return true;
+                }
+                delete t;
+                return false;
             });
     return output;
 }

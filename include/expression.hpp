@@ -34,11 +34,11 @@ class Expression {
     static void unexpectedHandler(string::iterator& i, int line_num);
 
    public:
+    Expression(string _str);
+    
     static vector<tuple<vector<Token*>, bool>> tokensFromString(
         string& s, map<string, float>& mem);
-
-    Expression(string _str);
-    static float eval(vector<Token*> input);
+    static float eval(vector<Token*>& input);
     static string print(vector<Token*> input);
     static vector<Token*> parse(vector<Token*> input);
 };
