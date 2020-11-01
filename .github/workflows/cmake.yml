@@ -32,7 +32,7 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: ./test/calculator_test
-
+    
     - name: Valgrind Memcheck
       working-directory: ${{runner.workspace}}/build
       run: valgrind ./src/calculator_run < ${{runner.workspace}}/TP_CPP_M1/testMemleaks.txt

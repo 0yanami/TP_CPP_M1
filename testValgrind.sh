@@ -1,0 +1,1 @@
+valgrind --leak-check=full  ./build/src/calculator_run < testValgrind.txt
