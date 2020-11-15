@@ -1,1 +1,0 @@
--negatives values at start perceived as negative Literal
