@@ -26,7 +26,7 @@ TEST(Program_test, test_OneLineProgram) {
     //no output when SEMI
     EXPECT_EQ (exec("1.27;"), "");
     EXPECT_EQ (exec("3/12.67;"), "");
-    EXPECT_EQ (exec("(86.1-10)*48.12;"), "");
+    EXPECT_EQ (exec("(86.1-10)*48.12;37.11/2;"), "");
     EXPECT_EQ (exec("3/12.67;"), "");
 }
 
@@ -40,14 +40,14 @@ TEST(Program_test, test_MultiLineProgram) {
 
 TEST(Program_test, test_Functions) {
     //declaration does not print
-    EXPECT_EQ (exec("testfun = 2"), "");
+    EXPECT_EQ (exec("testfun = 2;"), "");
     //declaration expect alpha at the beggining, any other char after until space
-    ASSERT_ANY_THROW(exec("_testfun = 2"));
-    ASSERT_NO_THROW(exec("test_fun = 2"));
-    ASSERT_NO_THROW(exec("TeStfUn = 2"));
-    ASSERT_NO_THROW(exec("T_estfUn__ = 2"));
-    ASSERT_NO_THROW(exec("T_eStfUn_10_ = 2"));
-    ASSERT_NO_THROW(exec("T_eStfUn_10_again_ = 2"));
+    ASSERT_ANY_THROW(exec("_testfun = 2;"));
+    ASSERT_NO_THROW(exec("test_fun = 2;"));
+    ASSERT_NO_THROW(exec("TeStfUn = 2;"));
+    ASSERT_NO_THROW(exec("T_estfUn__ = 2;"));
+    ASSERT_NO_THROW(exec("T_eStfUn_10_ = 2;"));
+    ASSERT_NO_THROW(exec("T_eStfUn_10_again_ = 2;"));
     //declaration + call
     //for multi line programs, ';' is expected at the end of the rvalue
     EXPECT_EQ (exec("testfun = 2; \n testfun+1"), "3.000000");

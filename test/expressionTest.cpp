@@ -1,11 +1,15 @@
+#include<functional>
+#include<map>
+
 #include "gtest/gtest.h"
 #include "expression.hpp"
 
-#include<map>
 
 string toTk(string s){
-    map<string, float> mem = {};
-    auto res = get<0>(Expression::tokensFromString(s,mem).at(0));
+    map<string, float> var_mem = {};
+    map<string, function<float(float)>> fun_mem = {};
+    Expression e{s,var_mem,fun_mem};
+    auto res = get<0>(e.tokensFromString().at(0));
     return Expression::print(res);
 }
 
@@ -24,8 +28,10 @@ TEST(ExpressionToString_test, test_Literal) {
     // 000000 perceived as 0
     EXPECT_EQ (toTk("000000"), "Literal(0)");
     EXPECT_NE (toTk("000000"), "Literal(000000)");
-    EXPECT_NE (toTk("-1"), "BinaryOp(-1)");
-    EXPECT_EQ (toTk("-1"), "BinaryOp(-)Literal(1)");
+    //negatives values at start perceived as negative Literal
+    EXPECT_NE (toTk("-1"), "BinaryOp(-)Literal(1)");
+    EXPECT_EQ (toTk("-1"), "Literal(-1)");
+    EXPECT_EQ (toTk("1-1"), "Literal(1)BinaryOp(-)Literal(1)");
     EXPECT_NE (toTk("23 4567"), "Literal(234567)");
     EXPECT_EQ (toTk("23 4567"), "Literal(23)Literal(4567)");
 }
@@ -35,8 +41,8 @@ TEST(ExpressionToString_test, test_Reals) {
     // 000000.0 perceived as 0
     EXPECT_EQ (toTk("000000.0"), "Literal(0)");
     EXPECT_NE (toTk("000000.0"), "Literal(000000)");
-    EXPECT_NE (toTk("-1.451"), "BinaryOp(-1.451)");
-    EXPECT_EQ (toTk("-1.451"), "BinaryOp(-)Literal(1.451)");
+    EXPECT_NE (toTk("-1.451"), "BinaryOp(-)Literal(1.451)");
+    EXPECT_EQ (toTk("-1.451"), "Literal(-1.451)");
     EXPECT_NE (toTk("23 4567.3"), "Literal(234567.3)");
     EXPECT_EQ (toTk("23 4567.3"), "Literal(23)Literal(4567.3)");
 }
