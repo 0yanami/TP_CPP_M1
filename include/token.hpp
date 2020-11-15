@@ -8,6 +8,7 @@
 #include <string>
 #include <tuple>
 #include <vector>
+#include <functional>
 
 using namespace std;
 
@@ -26,7 +27,8 @@ enum TOKEN {
     CR = 13,  // carriage return
     SPACE = 32,
     DOT = '.',
-    EQ = '='
+    EQ = '=',
+    FUN 
 };
 
 // list of possible associativities (RIGHT is not needed "right" now)
@@ -48,7 +50,7 @@ class Token {
    public:
     virtual ~Token(){};
     virtual TOKEN getTk() = 0;
-    virtual float v() const = 0;
+    virtual float v() const = 0; //TODO:VIRER V
     virtual void eval(vector<Token *> &stack) = 0;
     virtual void print(ostream &os) const = 0;
     virtual void RPN(vector<Token *> &output, vector<Token *> &stack) = 0;
@@ -108,6 +110,10 @@ class BinOp : public Token {
     TOKEN getTk() override { return t; }
 
     void eval(vector<Token *> &stack) override {
+        if(stack.size() < 2){
+            throw invalid_argument(
+                    "Input string contains mismatched binary operators");
+        }
         float b = stack.back()->v();
         delete stack.back();
         stack.pop_back();
@@ -166,6 +172,30 @@ class Par : public Token {
             }
             delete this;
         }
+    }
+};
+
+class Function : public Token {
+   private:
+    TOKEN t;
+    float val; //TODO: remplacer TOUS les v par val
+    std::function<float(float)> fun;
+
+   public:
+    ~Function() {}
+    Function(std::function<float(float)> _fun, float value) : fun(_fun), val(value) {
+        t = TOKEN::FUN;
+    }
+    TOKEN getTk() override { return t; }
+
+    // valeur du Literal
+    float v() const override { return -1; }
+    void eval(vector<Token *> &stack) override {
+        stack.push_back(new Literal(fun(val)));
+    }
+    void print(ostream &os) const override { os << "(Function)"; }
+    void RPN(vector<Token *> &output, vector<Token *> &stack) override {
+        output.push_back(this);
     }
 };
 
