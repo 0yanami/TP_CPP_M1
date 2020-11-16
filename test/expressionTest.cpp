@@ -6,9 +6,7 @@
 
 
 string toTk(string s){
-    map<string, float> var_mem = {};
-    map<string, function<float(float)>> fun_mem = {};
-    Expression e{s,var_mem,fun_mem};
+    Expression e{s};
     auto res = get<0>(e.tokensFromString().at(0));
     return Expression::print(res);
 }

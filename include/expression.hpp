@@ -12,6 +12,7 @@
 #include <functional>
 
 #include "token.hpp"
+#include "funStorage.hpp"
 
 using namespace std;
 
@@ -20,7 +21,7 @@ class Expression {
     string s;
     static map<char, TOKEN> binops;
     map<string, float> var_mem;
-    map<string, function<float(float)>> fun_mem;
+    FunStorage fun_mem;
 
     void varHandler(string& id, string::iterator& i,
                                 vector<Token*>& lineBuffer, int line_num);
@@ -37,10 +38,10 @@ class Expression {
    public:
     Expression(string _str,
         map<string, float>& _var_mem,
-        map<string, function<float(float)>>& _fun_mem): s(_str), var_mem(_var_mem), fun_mem(_fun_mem){};
-    Expression(string _str): s(_str), 
-                            var_mem(map<string, float>{}), 
-                            fun_mem(map<string, function<float(float)>>{}){};
+        FunStorage& _fun_mem): s(_str), var_mem(_var_mem), fun_mem(_fun_mem){};
+    Expression(string _str): s(_str),
+                            var_mem(map<string, float>{}),
+                            fun_mem(FunStorage{}){};
     
     vector<tuple<vector<Token*>, bool>> tokensFromString();
     //TODO: mettre ça dans une classe statique parser?

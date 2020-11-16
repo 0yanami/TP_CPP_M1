@@ -178,12 +178,12 @@ class Par : public Token {
 class Function : public Token {
    private:
     TOKEN t;
-    float val; //TODO: remplacer TOUS les v par val
-    std::function<float(float)> fun;
+    vector<float> val; //TODO: remplacer TOUS les v par val
+    std::function<float(vector<float>)> fun;
 
    public:
     ~Function() {}
-    Function(std::function<float(float)> _fun, float value) : fun(_fun), val(value) {
+    Function(std::function<float(vector<float>)> _fun, vector<float> value) : fun(_fun), val(value) {
         t = TOKEN::FUN;
     }
     TOKEN getTk() override { return t; }

@@ -8,6 +8,7 @@
 
 #include "token.hpp"
 #include "expression.hpp"
+#include "funStorage.hpp"
 
 using namespace std;
 

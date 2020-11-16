@@ -108,24 +108,29 @@ vector<tuple<vector<Token *>, bool>> Expression::tokensFromString() {
 
 
 void Expression::funHandler(string &id, string::iterator &i, vector<Token *> &lineBuffer, int line_num) {
-    string args = "";
+    stringstream args;
     //reading arguments
     i++;
     while(i == s.end() || *i != TOKEN::RPAR ){
-        args.push_back(*i);
+        args << *i;
         i++;
     }
+
+    vector<float> split_args;
+    string str;
+    while (getline(args, str, ',')) {
+        split_args.push_back(stof(str));
+    }
+
     i++;
     //si on trouve la fonction dans la mémoire fun_mem, on ajoute le token au linebuffer
-    if(fun_mem.find(id) != fun_mem.end()){
-        lineBuffer.emplace_back(new Function(fun_mem.at(id), stof(args)));
+    if(fun_mem.exists(id)){
+        fun_mem.funArgCheck(id,split_args.size());
+        lineBuffer.emplace_back(new Function(fun_mem.getFun(id), split_args));
     } else {
         throw invalid_argument("unknown reference to function '" + id +
                                    "' [line " + to_string(line_num) + "]");
     }
-    
-    // chercher id dans la map
-    //récupérer les arguments de la fonction, séparés par des, TODO: plus tard les multi arguments
 };
 
 void Expression::varHandler(string &id, string::iterator &i, vector<Token *> &lineBuffer, int line_num) {

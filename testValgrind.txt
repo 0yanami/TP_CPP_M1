@@ -10,3 +10,18 @@ x2 = 10;
 y2 = 7;
 slope = (y2-y1)/(x2-x1);
 slope
+funtest = exp(2) + log(128);
+funtest
+cos(10)
+sin(25.1)
+tan(16.5)
+log(128)
+exp(3)
+sqrt(9)
+pow(2, 3)
+hypot(1, 1)
+lerp(0.5, 0, 1)
+lerp(0.3, 0, 10)
+polynome(0, 2)
+polynome(2, 1, 1, 1, 2)
+
