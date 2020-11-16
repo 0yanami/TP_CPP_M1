@@ -44,7 +44,7 @@ class Expression {
                             fun_mem(FunStorage{}){};
     
     vector<tuple<vector<Token*>, bool>> tokensFromString();
-    //TODO: mettre ça dans une classe statique parser?
+    
     static float eval(vector<Token*>& input);
     static string print(vector<Token*> input);
     static vector<Token*> parse(vector<Token*> input);

@@ -37,7 +37,6 @@ vector<tuple<vector<Token *>, bool>> Expression::tokensFromString() {
         // negative values at start ie. -0.25 or -.25
         else if (i == s.begin() && *i == TOKEN::SUB && isdigit(*(i + 1)) ||
                  *(i + 1) == TOKEN::DOT) {
-            cout << "negative!" << endl;  // TODO: delete this
             digitHandler(s, i, lineBuffer);
         }
         // if char of string is a binop, add it

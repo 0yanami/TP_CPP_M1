@@ -50,7 +50,7 @@ class Token {
    public:
     virtual ~Token(){};
     virtual TOKEN getTk() = 0;
-    virtual float v() const = 0; //TODO:VIRER V
+    virtual float v() const = 0;
     virtual void eval(vector<Token *> &stack) = 0;
     virtual void print(ostream &os) const = 0;
     virtual void RPN(vector<Token *> &output, vector<Token *> &stack) = 0;
@@ -178,7 +178,7 @@ class Par : public Token {
 class Function : public Token {
    private:
     TOKEN t;
-    vector<float> val; //TODO: remplacer TOUS les v par val
+    vector<float> val; 
     std::function<float(vector<float>)> fun;
 
    public:

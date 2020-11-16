@@ -38,7 +38,7 @@ TEST(Program_test, test_MultiLineProgram) {
     EXPECT_EQ (exec("(6*5)+32.5; \n 3*7; \n 11/12.5;"), "");
 }
 
-TEST(Program_test, test_Functions) {
+TEST(Program_test, test_Variables) {
     //declaration does not print
     EXPECT_EQ (exec("testfun = 2;"), "");
     //declaration expect alpha at the beggining, any other char after until space
@@ -55,6 +55,24 @@ TEST(Program_test, test_Functions) {
     EXPECT_EQ (
         exec("testfun = 2; testfun2 = 10/2-1; \n testfun+testfun2"), "6.000000");
 }
+
+
+TEST(Program_test, test_Functions){
+    EXPECT_EQ(exec("sqrt(9)"),"3.000000");
+    EXPECT_EQ (exec("pow(2, 3)"),"8.000000");
+    EXPECT_EQ (exec("hypot(1, 1)"),"1.414214");
+    EXPECT_EQ (exec("lerp(0.5, 0, 1)"),"0.500000");
+    EXPECT_EQ (exec("lerp(0.3, 0, 10)"),"3.000000");
+
+    EXPECT_EQ (exec("polynome(0, 2)"),"2.000000");
+    EXPECT_EQ (exec("polynome(2, 1, 1, 1, 2)"),"7.000000");
+    ASSERT_NO_THROW(exec("polynome(2, 1, 1, 1, 4, 1, 2)"));
+    //wrong number of args
+    ASSERT_ANY_THROW (exec("pow(2)"));
+    ASSERT_ANY_THROW (exec("lerp(0.3, 0, 10, 7.5)"));
+}
+
+
 TEST(Program_test, test_FullPrograms){
     //circle diameter
     EXPECT_EQ (
