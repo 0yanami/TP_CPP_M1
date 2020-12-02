@@ -1,44 +1,23 @@
 Etudiant : Théo Dubus 22008507
 
-# TP1 C++
+# TP2 C++
 
-## Cette version implémente
-
-- L'analyse de tokens
-  
-- La conversion en représentation RPN
-  
-- L'évaluation d'une suite de tokens en RPN
-  
-- Les nombres réels
-  
-- Les opérateur binaires    `+ - * /`
-  
-- Les parenthèses  `(  )`
-  
-- Les priorité opératoires
-  
-- Les séquence d'expression, avec `;` pour ne pas afficher l'expression
-  
-- Les identifiants de la forme `[a-z A-Z][a-z A-Z 0-9 '_']*`
-  
-- Une mémoire
-  - déclaration avec `ID = expression;`
-  
-  - modification avec `ID_1 = ID_2`
-  
-  - appel avec `ID`
+## Ajouts dans cette version
+  - Support des fonctions unitaires
+  - Support des fonctions n-aires
+  - Support des fonction à nombre variable d'arguments
 
 ## Difficultés rencontrés
 
-Au début du projet, la compréhension de la fonction `eval(...)` et son implémentation polymorphique  sont surement les 2 étapes qui m'ont pris le plus de temps.\
-La gestion des fuites mémoire a aussi été complexe, j'ai essayé d'utiliser les `unique_ptr` mais après de nombreux problèmes, le temps étant compté je me suis tourné vers une gestion avec `new` et `delete` qui ne me plaisent pas vraiment. Je prévois d'utiliser les `shared_ptr` lors du prochain TP qui sont plus adapté au projet car elles permettent la création de plusieurs pointeurs vers la même ressource.
+L'ajout des fonction à nombre variable d'arguments, notamment pour le passage des arguments à la fonction lambda stockée en mémoire.
+La mémoire des fonction à aussi été complexe, au final cette mémoire est gérée par une classe dédiée `funStorage` avec toutes les méthodes nécessaire au management de cette mémoire, dont la vérification du nombre d'arguments.
 
 ## Choix d'implémentation
 
-Les classes `Literal` (nombres réels et entiers) `BinOp` (+,-,*,/) `Par` (Parenthèses) héritent toutes les tois de la classe abstraite `Token`. Les méthodes  `eval` `print` et `parse` de la classe `Expression`  exploitent ce polymorphisme.\
-Les fonction sont gérés par la partie analyseur syntaxique, lorsque une définition`ID = ...;` est trouvé, on traite la partie après le `=` jusqu'à `;` comme un sous programme puis on évalue et stocke le résultat dans une map `{id, valeur}`. Si l'ID est déja dans la map on modifie la valeur.\
-Lors de l'affichage d'une variable `ID`, on retrouve la valeur stocké dans la map `{id, valeur}` et on ajoute un Token `Literal` contenant cette valeur.
+La classe `Function` qui hérite de `Token` à été ajoutée pour gérer les fonctions. Ces fonctions sont calculées dans la méthode eval, ce qui permet de respecter la hiérarchie lexer/parser.
+On utilise `funStorage` pour stocker des fonction lambda associées à leur nom et leur nombre d'argument (mis à -1 si la fonction possède un nombre variable d'arguments). \
+Les tests unitaires ont aussi été ajoutés dans `test/programTest.cpp`.
+Une modification de la classe `Expression`, notamment de `tokensFormString()` simplifie le code et limite les passages d'arguments.
 
 ## Compilation du projet
 
@@ -85,8 +64,8 @@ Exemples d'execution de CI : \
 
 - Execution du "workflow" avec succès :
 
-![Execution du "workflow" avec succès](succes.png)
+![Execution du "workflow" avec succès](.markdown/succes.png)
 
 - Echec de la tache Valgrind Memcheck :
 
-![Echec de la tache Valgrind Memcheck](echec.png)
+![Echec de la tache Valgrind Memcheck](.markdown/echec.png)
