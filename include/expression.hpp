@@ -32,6 +32,8 @@ class Expression {
     void digitHandler(   string& s, string::iterator& i,
                                 vector<Token*>& lineBuffer);
 
+    bool handleCurryfied(string &id, string::iterator &i);
+
     void binOpHandler();
     void unexpectedHandler(string::iterator& i, int line_num);
 

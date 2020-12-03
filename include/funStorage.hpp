@@ -9,8 +9,14 @@
 using namespace std;
 //class for function storage
 class FunStorage{
-    //name, function
+
+    //main functions memory
+    //<name, < nbArguments, function >>
     map<string,pair<  int,function<float(vector<float>)>  >> mem;
+
+    //curryfied functions memory
+    //<name, <targetFunctionName, partialArguments>>
+    map<string,pair< string,vector<float> >> curr_mem;
 
 public:
     //add default functions at storage init
@@ -42,30 +48,72 @@ public:
     ~FunStorage(){};
 
     int getNbArgs(string _fName){
-        return get<0>(mem.at(_fName));
+        //for general functions
+        if(mem.find(_fName) != mem.end()){
+            return get<0>(mem.at(_fName));
+        }
+        //for currified functions(get nbArgs of target function)
+        return  getNbArgs(get<0>(curr_mem.at(_fName)));
     }
-
+    //function exists in mem or curr_mem
     bool exists(string _fName){
-        return mem.find(_fName) != mem.end();
+        return (mem.find(_fName) != mem.end()) ||
+               (curr_mem.find(_fName) != curr_mem.end());
     }
 
+    bool isCurry(string _fName){
+        return curr_mem.find(_fName) != curr_mem.end();
+    }
+    
     function<float(vector<float>)> getFun(string _fName){
-        return get<1>(mem.at(_fName));
+        if(mem.find(_fName) != mem.end()){
+            //fonction trouvé dans mem, on la retourne
+            return get<1>(mem.at(_fName));
+        } else {
+            // sinon recherche de la fonction dans curr_mem
+            return get<1>(mem.at(get<0>(curr_mem.at(_fName))));
+        }
+        
     }
 
-    void addFun(string name, int nbArgs, function<float(vector<float>)> _f){
-        mem.emplace(pair{name, pair{nbArgs, _f}});
+    //get partial arguments of currefied function
+    vector<float> getCurrArgs(string _fName){
+        return get<1>(curr_mem.at(_fName));
+    }
+    //add traditional function
+    void addFun(string _name, int _nbArgs, function<float(vector<float>)> _f){
+        mem.emplace(pair{_name, pair{_nbArgs, _f}});
     }
 
-    void funArgCheck(string _fName, int _nbArgs) {
-        //no check for functions with variable number of args
-        if(this->getNbArgs(_fName) == -1)return;
+    //add currefied function
+    void addCurr(string _name, string _refName, vector<float> _partialArgs){
+        curr_mem.emplace(pair{_name, pair{_refName,_partialArgs}});
+    }
+
+    //check if function accept number of args
+    int funArgCheck(string _fName, int _nbArgs) {
+        //return -1 for functions with variable number of args
+        if(this->getNbArgs(_fName) == -1)return -1;
+        //error if incorrect number of args
         if (this->getNbArgs(_fName) != _nbArgs) {
             string errMsg = "'" + _fName + "' expect "+to_string(this->getNbArgs(_fName)) + 
                             " args, " + to_string(_nbArgs) + " given.";
             throw ::invalid_argument(errMsg);
         }
     }
+    //return number of missing arguments for currified functions
+    int missingArgsCheck(string _fName, int _nbArgs) {
+        //returns 1 for functions with variable number of args
+        if(this->getNbArgs(_fName) == -1)return 1;
+        //error if too many args given
+        if (this->getNbArgs(_fName) < _nbArgs) {
+            string errMsg = "'" + _fName + "' expect "+to_string(this->getNbArgs(_fName)) + 
+                            " args, " + to_string(_nbArgs) + " given.";
+            throw ::invalid_argument(errMsg);
+        } else{
+            return this->getNbArgs(_fName) - _nbArgs;
+        }
+    }    
 };
 
 #endif
