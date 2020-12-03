@@ -50,7 +50,6 @@ class Token {
    public:
     virtual ~Token(){};
     virtual TOKEN getTk() = 0;
-    virtual float v() const = 0;
     virtual void eval(vector<Token *> &stack) = 0;
     virtual void print(ostream &os) const = 0;
     virtual void RPN(vector<Token *> &output, vector<Token *> &stack) = 0;
@@ -70,7 +69,7 @@ class Literal : public Token {
     TOKEN getTk() override { return t; }
 
     // valeur du Literal
-    float v() const override { return num; }
+    float v() const { return num; }
     void eval(vector<Token *> &stack) override {
         stack.push_back(new Literal(num));
     }
@@ -105,7 +104,6 @@ class BinOp : public Token {
 
    public:
     ~BinOp() {}
-    float v() const override { return -1; }
     BinOp(TOKEN _t) : t(_t) {}
     TOKEN getTk() override { return t; }
 
@@ -114,10 +112,10 @@ class BinOp : public Token {
             throw invalid_argument(
                     "Input string contains mismatched binary operators");
         }
-        float b = stack.back()->v();
+        float b = static_cast<Literal*>(stack.back())->v();
         delete stack.back();
         stack.pop_back();
-        float a = stack.back()->v();
+        float a = static_cast<Literal*>(stack.back())->v();
         delete stack.back();
         stack.pop_back();
 
@@ -145,7 +143,6 @@ class Par : public Token {
     Par(TOKEN _t) : t(_t) {}
     ~Par() {}
     TOKEN getTk() override { return t; }
-    float v() const override { return -1; }
     void eval(vector<Token *> &stack) override { stack.push_back(move(this)); }
     void print(ostream &os) const override {
         os << "(" << (t == TOKEN::LPAR ? "Left " : "Right ") << "Parenthesis)";
@@ -187,9 +184,6 @@ class Function : public Token {
         t = TOKEN::FUN;
     }
     TOKEN getTk() override { return t; }
-
-    // valeur du Literal
-    float v() const override { return -1; }
     void eval(vector<Token *> &stack) override {
         stack.push_back(new Literal(fun(val)));
     }

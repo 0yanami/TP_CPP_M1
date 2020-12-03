@@ -10,11 +10,11 @@ using namespace std;
 //class for function storage
 class FunStorage{
 
-    //main functions memory
+    //main function memory
     //<name, < nbArguments, function >>
     map<string,pair<  int,function<float(vector<float>)>  >> mem;
 
-    //curryfied functions memory
+    //curryfied function memory
     //<name, <targetFunctionName, partialArguments>>
     map<string,pair< string,vector<float> >> curr_mem;
 

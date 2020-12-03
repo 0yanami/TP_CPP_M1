@@ -8,7 +8,7 @@ float Expression::eval(vector<Token *> &input) {
     for (auto &token : input) {
         token->eval(output);
     }
-    float res = output.back()->v();
+    float res = static_cast<Literal*>(output.back())->v();
     delete output.back();
     return res;
 }
@@ -114,7 +114,6 @@ void Expression::funHandler(string &id, string::iterator &i, vector<Token *> &li
         args << *i;
         i++;
     }
-
     vector<float> split_args;
     string str;
     while (getline(args, str, ',')) {
@@ -122,9 +121,9 @@ void Expression::funHandler(string &id, string::iterator &i, vector<Token *> &li
     }
 
     i++;
-    //si on trouve la fonction dans la mémoire , on ajoute le token au linebuffer
+    //if function found in memory, add it to lineBuffer
     if(fun_mem.exists(id)){
-        //un function is curryfied, add it's missing args
+        //if function is curryfied, add it's missing args
         if(fun_mem.isCurry(id)){
             vector<float> currArgs = fun_mem.getCurrArgs(id);
             currArgs.insert(currArgs.end(), split_args.begin(),split_args.end());
@@ -140,31 +139,33 @@ void Expression::funHandler(string &id, string::iterator &i, vector<Token *> &li
 
 //for currified functions handling, returns true if curryfield functions was handled
 bool Expression::handleCurryfied(string &id, string::iterator &i){
-    int dec = 0; //TODO: enlever a avec un iterator temp plus tard
+    // counter to revert i to it's original position if function is not curryfied
+    int cpt = 0;
+
     while(*i == TOKEN::SPACE){
         i++;
-        dec++;
+        cpt++;
     }
     if(isalpha(*i)){
         string fName = ""; // name of new currefied function
         while(isalpha(*i)){
             fName.push_back(*i);
             i++;
-            dec++;
+            cpt++;
         }
         //if function is read and function exists
         if(*i == TOKEN::LPAR && fun_mem.exists(fName)){
             stringstream args;
             //read arguments of function
             i++;
-            dec++;
+            cpt++;
             while(i == s.end() || *i != TOKEN::RPAR ){
                 args << *i;
                 i++;
-                dec++;
+                cpt++;
             }
             i++;
-            dec++;
+            cpt++;
             vector<float> split_args;
             string str;
             while (getline(args, str, ',')) {
@@ -172,22 +173,23 @@ bool Expression::handleCurryfied(string &id, string::iterator &i){
             }
             int nbArgsMissing = fun_mem.missingArgsCheck(fName,split_args.size());
             if( nbArgsMissing > 0){
-                //add function 'id' with reference to 'fName' with args 'split_args'
+                //add currified function 'id' with reference to 'fName' with args 'split_args'
                 fun_mem.addCurr(id,fName,split_args);
                 return true;
             } else {
                 // no missing args - >normal function
                 // revert iterator and discard
-                i -= dec;
+                i -= cpt;
                 return false;
             }
         } else {
             //not a function, discard it.
-            i -= dec;
+            i -= cpt;
             return false;
         }
     }
-    i -= dec;
+    //not an id, discard it.
+    i -= cpt;
     return false;
 }
 
@@ -238,10 +240,7 @@ void Expression::varHandler(string &id, string::iterator &i, vector<Token *> &li
                                    " referenced before assignment");
         }
     }
-    
 };
-
-
 
 void Expression::digitHandler(string &s, string::iterator &i,
                               vector<Token *> &lineBuffer) {

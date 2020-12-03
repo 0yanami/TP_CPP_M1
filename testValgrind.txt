@@ -24,4 +24,10 @@ lerp(0.5, 0, 1)
 lerp(0.3, 0, 10)
 polynome(0, 2)
 polynome(2, 1, 1, 1, 2)
-
+speciallerp = lerp(0.7);
+speciallerp(3,4)
+toPow2 = pow(2);
+toPow2(4)
+toPow2(8)
+specialpoly = polynome(2,1,1,1);
+specialpoly(2)

@@ -1,23 +1,20 @@
-Etudiant : Théo Dubus 22008507
-
-# TP2 C++
+![CMake](https://github.com/Mich3l14/TP_CPP_M1/workflows/CMake/badge.svg)
+# TP3 C++
 
 ## Ajouts dans cette version
-  - Support des fonctions unitaires
-  - Support des fonctions n-aires
-  - Support des fonction à nombre variable d'arguments
+  - Support des fonctions curryfiées
+  - Ajout des tests sur les fonctions curryfiées
+  - Modification de la classe `Token` (suppression de `v()` qui n'était utile que pour les `Literal`)
+  - Ajout des tests de curryfication dans `testValgrind.txt`
 
 ## Difficultés rencontrés
 
-L'ajout des fonction à nombre variable d'arguments, notamment pour le passage des arguments à la fonction lambda stockée en mémoire.
-La mémoire des fonction à aussi été complexe, au final cette mémoire est gérée par une classe dédiée `funStorage` avec toutes les méthodes nécessaire au management de cette mémoire, dont la vérification du nombre d'arguments.
+L'ajout des fonction spécialisées, dont la prise en charge de la syntaxe `pow(_1, 2)` par exemple, aurait nécessité une refonte du projet et du fonctionnement du parseur et le la mémoire des variables. Le temps étant limité avec l'approche des partiels je n'ai pas pu finir d'implémenter cette dernière fonctionnalité dans mon projet. 
 
 ## Choix d'implémentation
 
-La classe `Function` qui hérite de `Token` à été ajoutée pour gérer les fonctions. Ces fonctions sont calculées dans la méthode eval, ce qui permet de respecter la hiérarchie lexer/parser.
-On utilise `funStorage` pour stocker des fonction lambda associées à leur nom et leur nombre d'argument (mis à -1 si la fonction possède un nombre variable d'arguments). \
-Les tests unitaires ont aussi été ajoutés dans `test/programTest.cpp`.
-Une modification de la classe `Expression`, notamment de `tokensFormString()` simplifie le code et limite les passages d'arguments.
+On a choisi d'ajouter les fonction curryfiées avec une 2ème mémoire qui contient le nom de la nouvelle fonction curryfiée, le nom de la fonction originale, et les arguments déjà spécifiés.
+Dans le lexer, la création de nouvelles fonctions curryfiées se fait avec `handleCurryfied()`. On peut ensuite appeller les fonctions comme des fonctions classique après avoir vérifié si la fonction est de type curryfiée et après avoir ajouté les paramètres prédéfinis le cas échéant. A noter que la fonction à nombre variables d'arguments `polynome()` supporte aussi la curryfication.
 
 ## Compilation du projet
 
@@ -44,8 +41,8 @@ Les test sont séparés en 2 fichiers `.cpp` :
 
 ## Fuites mémoire
 
-Le projet a été testé avec `valgrind` pour détecter la présence ou non de 'memleaks'.
-Un script `testValgrind.sh` permet de tester les fuites sur un programme type composé de toutes les possibilités du langage.
+Le projet a été testé avec `valgrind` pour détecter la présence ou non de 'memleaks' et aucune fuite n'a été trouvée.
+Un script `testValgrind.sh` permet de tester les fuites sur un programme type composé de toutes les possibilités du langage. 
 
 ## Continuous integration
 
@@ -66,6 +63,6 @@ Exemples d'execution de CI : \
 
 ![Execution du "workflow" avec succès](.markdown/succes.png)
 
-- Echec de la tache Valgrind Memcheck :
+- Echec de la tache Valgrind Memcheck (ce n'est qu'un exemple, le projet ne contient pas de memleaks) :
 
 ![Echec de la tache Valgrind Memcheck](.markdown/echec.png)

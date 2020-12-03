@@ -16,7 +16,7 @@ jobs:
       run: cmake -E make_directory ${{runner.workspace}}/build
 
     - name: Install Valgrind
-      run: sudo apt-get install valgrind
+      run: sudo apt-get update && sudo apt-get install valgrind
 
     - name: Configure CMake
       shell: bash
