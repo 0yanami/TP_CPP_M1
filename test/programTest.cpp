@@ -72,6 +72,17 @@ TEST(Program_test, test_Functions){
     ASSERT_ANY_THROW (exec("lerp(0.3, 0, 10, 7.5)"));
 }
 
+TEST(Program_test, test_Curry){
+    //curryfied lerp
+    EXPECT_EQ (
+        exec("speciallerp = lerp(0.7); speciallerp(3,4)"), "3.700000");
+    //multiple call
+    EXPECT_EQ (
+        exec("toPow2 = pow(2); toPow2(4) \n toPow2(8) "), "16.000000256.000000");
+    //test with tp2 example
+    EXPECT_EQ (
+        exec("specialpoly = polynome(2,1,1,1); specialpoly(2)"), "7.000000");    
+}
 
 TEST(Program_test, test_FullPrograms){
     //circle diameter

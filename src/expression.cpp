@@ -122,17 +122,13 @@ void Expression::funHandler(string &id, string::iterator &i, vector<Token *> &li
     }
 
     i++;
-    //si on trouve la fonction dans la mémoire fun_mem, on ajoute le token au linebuffer
-    cout << "exists: " << id << endl;
+    //si on trouve la fonction dans la mémoire , on ajoute le token au linebuffer
     if(fun_mem.exists(id)){
         //un function is curryfied, add it's missing args
         if(fun_mem.isCurry(id)){
             vector<float> currArgs = fun_mem.getCurrArgs(id);
             currArgs.insert(currArgs.end(), split_args.begin(),split_args.end());
             split_args = currArgs;
-        }
-        for(float i : split_args){
-            cout << i << endl;
         }
         fun_mem.funArgCheck(id,split_args.size());
         lineBuffer.emplace_back(new Function(fun_mem.getFun(id), split_args));
@@ -156,7 +152,6 @@ bool Expression::handleCurryfied(string &id, string::iterator &i){
             i++;
             dec++;
         }
-        cout << fName<<endl;
         //if function is read and function exists
         if(*i == TOKEN::LPAR && fun_mem.exists(fName)){
             stringstream args;
@@ -176,7 +171,6 @@ bool Expression::handleCurryfied(string &id, string::iterator &i){
                 split_args.push_back(stof(str));
             }
             int nbArgsMissing = fun_mem.missingArgsCheck(fName,split_args.size());
-            cout << nbArgsMissing << endl;
             if( nbArgsMissing > 0){
                 //add function 'id' with reference to 'fName' with args 'split_args'
                 fun_mem.addCurr(id,fName,split_args);
